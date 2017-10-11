@@ -174,6 +174,14 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
+    
+    if (!Array.isArray(collection)) {
+      var array = [];      
+      for (var key in collection) {
+        array.push(collection[key]);
+      }
+      collection = array;
+    }
     var start = 0;
     if (accumulator === undefined) {
       accumulator = collection[0];
@@ -200,12 +208,32 @@
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
+    if (iterator === undefined) {
+      iterator = _.identity;
+    }
+    var result = true;
+    for (var i = 0; i < collection.length; i++) {
+      if (!iterator(collection[i])) {
+        return false;
+      }
+    }
+    return result;
     // TIP: Try re-using reduce() here.
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
+    if (iterator === undefined) {
+      iterator = _.identity;
+    }
+    var result = false;
+    for (var i = 0; i < collection.length; i++) {
+      if (iterator(collection[i])) {
+        return true;
+      }
+    }
+    return result;
     // TIP: There's a very clever way to re-use every() here.
   };
 
@@ -229,11 +257,27 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var args = Array.prototype.slice.call(arguments);
+    for (var i = 1; i < args.length; i++) {
+      _.each(args[i], function(value, key) {
+        obj[key] = value;
+      });
+    }
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var args = Array.prototype.slice.call(arguments);
+    for (var i = 1; i < args.length; i++) {
+      _.each(args[i], function(value, key) {
+        if (!obj.hasOwnProperty(key)) {
+          obj[key] = value;
+        }
+      });
+    }
+    return obj;
   };
 
 
@@ -276,8 +320,30 @@
   // _.memoize should return a function that, when called, will check if it has
   // already computed the result for the given argument and return that value
   // instead if possible.
+
   _.memoize = function(func) {
+    var cache = {};
+    var result;
+    return function() {
+      var args = Array.prototype.slice.call(arguments);
+      for (var key in cache) {
+        if (key === JSON.stringify(args)) {
+          return cache[key];
+        }
+      }
+      result = func.apply(this, arguments);
+      cache[JSON.stringify(args)] = result;
+      return result;
+    };
   };
+
+/* 
+Check if function has already been called for a given argument
+Store values for arguments that have already been called.
+If argument has been called, return stored value for those arguments.
+
+
+*/
 
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
@@ -286,6 +352,8 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.from(arguments);
+    return setTimeout.apply(this, args);
   };
 
 
@@ -300,6 +368,15 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var newArray = array.slice();
+    var results = [];
+    while (newArray.length) {
+      debugger;
+      var randomIndex = Math.floor(Math.random() * newArray.length); 
+      results.push(newArray[randomIndex]);
+      newArray = newArray.slice(0, randomIndex).concat(newArray.slice(randomIndex + 1));
+    }
+    return results;
   };
 
 
@@ -314,6 +391,7 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+    
   };
 
   // Sort the object's values by a criterion produced by an iterator.
