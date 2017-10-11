@@ -105,22 +105,35 @@
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array, isSorted, iterator) {
+    var temp = {};
     var results = [];
-    var transformed;
     if (iterator) {
-      transformed = _.map(array, function(value) {
-        return iterator(value);
+      var keys = [];
+      _.each(array, function(value) {
+        keys.push(iterator(value));
       });
-    } else {
-      transformed = array;
-    }
-    _.each(transformed, function(value) {
-      if (!results.includes(value)) {
-        results.push(value);
+    
+      for (var i = 0; i < keys.length; i++) {
+        if (!temp.hasOwnProperty(keys[i])) {
+          temp[keys[i]] = array[i];
+        }   
       }
-    });
+
+      _.each(temp, function(value, key) {
+        results.push(value);
+      });
+
+    } else {
+      _.each(array, function(value) {
+        if (!results.includes(value)) {
+          results.push(value);
+        }
+      });
+    }
     return results;
   };
+
+
 
 
   // Return the results of applying an iterator to each element.
